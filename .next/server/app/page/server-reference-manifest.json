@@ -1,0 +1,45 @@
+{
+  "node": {
+    "005971c03fe591b661252ea00fdc641e61984e12ce": {
+      "workers": {
+        "app/page": {
+          "moduleId": 57526,
+          "async": false
+        }
+      },
+      "exportedName": "archiveCompleteAction",
+      "filename": "app/actions.ts"
+    },
+    "4006ad4766f091f09803e48c2ee24b2be76738c6e5": {
+      "workers": {
+        "app/page": {
+          "moduleId": 57526,
+          "async": false
+        }
+      },
+      "exportedName": "createTicketAction",
+      "filename": "app/actions.ts"
+    },
+    "70758b0f348f22ba030528a8d3edfad9d9d7b9d39e": {
+      "workers": {
+        "app/page": {
+          "moduleId": 57526,
+          "async": false
+        }
+      },
+      "exportedName": "moveTicketAction",
+      "filename": "app/actions.ts"
+    },
+    "60066a574eeac3cab9dcb3887e745a7780c83c7bb1": {
+      "workers": {
+        "app/page": {
+          "moduleId": 57526,
+          "async": false
+        }
+      },
+      "exportedName": "updateTicketAction",
+      "filename": "app/actions.ts"
+    }
+  },
+  "edge": {}
+}
