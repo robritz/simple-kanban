@@ -19,6 +19,7 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalList
 import { CSS } from "@dnd-kit/utilities";
 import { COLUMNS, findTicket, isColumnId, moveTicket, type Board, type ColumnId, type Ticket } from "@/lib/board";
 import { archiveCompleteAction, createTicketAction, moveTicketAction, updateTicketAction } from "./actions";
+import { linkify } from "@/lib/linkify";
 import { TicketForm } from "./ticket-form";
 import { logoutAction } from "./login/actions";
 
@@ -271,14 +272,45 @@ function Card({ ticket, column, overlay }: { ticket: Ticket; column: ColumnId; o
   const overdue = now !== null && column !== "complete" && ticket.dueDate !== null && ticket.dueDate < now;
   return (
     <article className={`card${overlay ? " overlay" : ""}`}>
-      <h3>{ticket.title}</h3>
-      {ticket.description && <p>{ticket.description}</p>}
+      <h3>
+        <Linkified text={ticket.title} />
+      </h3>
+      {ticket.description && (
+        <p>
+          <Linkified text={ticket.description} />
+        </p>
+      )}
       {ticket.dueDate && (
         <time dateTime={ticket.dueDate} className={overdue ? "due overdue" : "due"}>
           {overdue ? "Overdue · " : "Due "}{formatDate(ticket.dueDate)}
         </time>
       )}
     </article>
+  );
+}
+
+/**
+ * Text with URLs rendered as links. Links open in a new tab and stop the
+ * pointer/click/key events that would otherwise drag or open the card.
+ */
+function Linkified({ text }: { text: string }) {
+  const stop = (e: React.SyntheticEvent) => e.stopPropagation();
+  return linkify(text).map((s, i) =>
+    s.type === "text" ? (
+      s.text
+    ) : (
+      <a
+        key={i}
+        href={s.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={stop}
+        onPointerDown={stop}
+        onKeyDown={stop}
+      >
+        {s.text}
+      </a>
+    ),
   );
 }
 
