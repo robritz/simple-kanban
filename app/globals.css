@@ -164,3 +164,6 @@ button.text:hover { background: transparent; color: var(--ink); text-decoration:
   color: var(--ink);
 }
 .login-card input:focus { outline: none; border-bottom-color: var(--ink); }
+
+.card a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.card a:hover { color: var(--muted); }
