@@ -20,6 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { COLUMNS, findTicket, isColumnId, moveTicket, type Board, type ColumnId, type Ticket } from "@/lib/board";
 import { archiveCompleteAction, createTicketAction, moveTicketAction, updateTicketAction } from "./actions";
 import { TicketForm } from "./ticket-form";
+import { logoutAction } from "./login/actions";
 
 /** Which Ticket is open for inline editing: "new" for the draft at the top of To-do. */
 type Editing = "new" | string | null;
@@ -164,6 +165,14 @@ export function BoardView({ initial }: { initial: Board }) {
         </div>
         <DragOverlay>{activeTicket ? <Card ticket={activeTicket} column={columnOf(board, activeTicket.id) ?? "todo"} overlay /> : null}</DragOverlay>
       </DndContext>
+
+      <footer className="page-footer">
+        <form action={logoutAction}>
+          <button type="submit" className="text">
+            Log out
+          </button>
+        </form>
+      </footer>
     </main>
   );
 }
