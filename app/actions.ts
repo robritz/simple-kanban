@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireSignedIn } from "@/lib/auth";
 import { isColumnId, validateTicketInput } from "@/lib/board";
 import * as tickets from "@/lib/tickets";
 
@@ -17,6 +18,7 @@ function readForm(form: FormData) {
 }
 
 export async function createTicketAction(form: FormData): Promise<ActionResult> {
+  await requireSignedIn();
   const input = readForm(form);
   if (!input.ok) return input;
   await tickets.createTicket(input.value);
@@ -25,6 +27,7 @@ export async function createTicketAction(form: FormData): Promise<ActionResult> 
 }
 
 export async function updateTicketAction(id: string, form: FormData): Promise<ActionResult> {
+  await requireSignedIn();
   if (!UUID.test(id)) return { ok: false, error: "Unknown ticket." };
   const input = readForm(form);
   if (!input.ok) return input;
@@ -34,6 +37,7 @@ export async function updateTicketAction(id: string, form: FormData): Promise<Ac
 }
 
 export async function moveTicketAction(id: string, column: string, index: number): Promise<ActionResult> {
+  await requireSignedIn();
   if (!UUID.test(id) || !isColumnId(column) || !Number.isInteger(index))
     return { ok: false, error: "Invalid move." };
   const found = await tickets.moveTicketTo(id, column, index);
@@ -42,6 +46,7 @@ export async function moveTicketAction(id: string, column: string, index: number
 }
 
 export async function archiveCompleteAction(): Promise<ActionResult> {
+  await requireSignedIn();
   await tickets.archiveComplete();
   revalidatePath("/");
   return { ok: true };
