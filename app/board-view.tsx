@@ -19,9 +19,10 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalList
 import { CSS } from "@dnd-kit/utilities";
 import { COLUMNS, findTicket, isColumnId, moveTicket, type Board, type ColumnId, type Ticket } from "@/lib/board";
 import { archiveCompleteAction, createTicketAction, moveTicketAction, updateTicketAction } from "./actions";
-import { TicketDialog } from "./ticket-dialog";
+import { TicketForm } from "./ticket-form";
 
-type Editing = { mode: "new" } | { mode: "edit"; ticket: Ticket } | null;
+/** Which Ticket is open for inline editing: "new" for the draft at the top of To-do. */
+type Editing = "new" | string | null;
 
 export function BoardView({ initial }: { initial: Board }) {
   const router = useRouter();
@@ -114,12 +115,7 @@ export function BoardView({ initial }: { initial: Board }) {
 
   return (
     <main>
-      <header className="topbar">
-        <h1>Simple Kanban</h1>
-        <button className="primary" onClick={() => setEditing({ mode: "new" })}>
-          + New ticket
-        </button>
-      </header>
+      <h1 className="visually-hidden">Simple Kanban</h1>
 
       {error && (
         <p className="error banner" role="alert">
@@ -143,11 +139,23 @@ export function BoardView({ initial }: { initial: Board }) {
               id={col.id}
               label={col.label}
               tickets={board[col.id]}
-              onOpen={(ticket) => setEditing({ mode: "edit", ticket })}
+              editing={editing}
+              onOpen={(ticket) => setEditing(ticket.id)}
+              onDone={() => setEditing(null)}
               action={
-                col.id === "complete" ? (
-                  <button onClick={archive} disabled={archiving || board.complete.length === 0}>
-                    Archive
+                col.id === "todo" ? (
+                  <button className="icon" aria-label="Add ticket" title="Add ticket" onClick={() => setEditing("new")}>
+                    <PlusIcon />
+                  </button>
+                ) : col.id === "complete" ? (
+                  <button
+                    className="icon"
+                    aria-label="Archive Complete tickets"
+                    title="Archive Complete tickets"
+                    onClick={archive}
+                    disabled={archiving || board.complete.length === 0}
+                  >
+                    <ArchiveIcon />
                   </button>
                 ) : null
               }
@@ -156,19 +164,6 @@ export function BoardView({ initial }: { initial: Board }) {
         </div>
         <DragOverlay>{activeTicket ? <Card ticket={activeTicket} column={columnOf(board, activeTicket.id) ?? "todo"} overlay /> : null}</DragOverlay>
       </DndContext>
-
-      {editing?.mode === "new" && (
-        <TicketDialog heading="New ticket" submitLabel="Add" onSubmit={createTicketAction} onClose={() => setEditing(null)} />
-      )}
-      {editing?.mode === "edit" && (
-        <TicketDialog
-          heading="Edit ticket"
-          submitLabel="Save"
-          ticket={editing.ticket}
-          onSubmit={(form) => updateTicketAction(editing.ticket.id, form)}
-          onClose={() => setEditing(null)}
-        />
-      )}
     </main>
   );
 }
@@ -182,13 +177,17 @@ function Column({
   id,
   label,
   tickets,
+  editing,
   onOpen,
+  onDone,
   action,
 }: {
   id: ColumnId;
   label: string;
   tickets: Ticket[];
+  editing: Editing;
   onOpen: (t: Ticket) => void;
+  onDone: () => void;
   action: React.ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
@@ -200,11 +199,22 @@ function Column({
         </h2>
         {action}
       </header>
-      <SortableContext items={tickets.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+      <SortableContext items={tickets.filter((t) => t.id !== editing).map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <ol ref={setNodeRef} className={`cards${isOver ? " over" : ""}`}>
-          {tickets.map((t) => (
-            <SortableCard key={t.id} ticket={t} column={id} onOpen={onOpen} />
-          ))}
+          {id === "todo" && editing === "new" && (
+            <li>
+              <TicketForm onSubmit={createTicketAction} onDone={onDone} />
+            </li>
+          )}
+          {tickets.map((t) =>
+            t.id === editing ? (
+              <li key={t.id}>
+                <TicketForm ticket={t} onSubmit={(form) => updateTicketAction(t.id, form)} onDone={onDone} />
+              </li>
+            ) : (
+              <SortableCard key={t.id} ticket={t} column={id} onOpen={onOpen} />
+            ),
+          )}
         </ol>
       </SortableContext>
     </section>
@@ -228,6 +238,22 @@ function SortableCard({ ticket, column, onOpen }: { ticket: Ticket; column: Colu
     >
       <Card ticket={ticket} column={column} />
     </li>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M8 1v14M1 8h14" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    </svg>
+  );
+}
+
+function ArchiveIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M1 2h14v3H1zM2 5v9h12V5M6 8h4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    </svg>
   );
 }
 
