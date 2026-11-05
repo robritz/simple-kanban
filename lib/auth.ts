@@ -19,7 +19,7 @@ export async function isSignedIn(): Promise<boolean> {
   return verifySessionToken((await cookies()).get(COOKIE)?.value, pw);
 }
 
-/** Use at the top of every page and server action that touches the Board. */
+/** Use at the top of every server action. Pages use <AuthGate>. */
 export async function requireSignedIn(): Promise<void> {
   if (!(await isSignedIn())) redirect("/login");
 }
