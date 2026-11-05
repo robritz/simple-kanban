@@ -240,7 +240,7 @@ function Card({ ticket, column, overlay }: { ticket: Ticket; column: ColumnId; o
       {ticket.description && <p>{ticket.description}</p>}
       {ticket.dueDate && (
         <time dateTime={ticket.dueDate} className={overdue ? "due overdue" : "due"}>
-          Due {formatDate(ticket.dueDate)}
+          {overdue ? "Overdue · " : "Due "}{formatDate(ticket.dueDate)}
         </time>
       )}
     </article>
